@@ -1,0 +1,15 @@
+---
+apiVersion: wego.weave.works/v1alpha1
+kind: Application
+metadata:
+  labels:
+    wego.weave.works/app-identifier: wego-93f0814bfebffb70c9e0146f06f03575
+  name: test
+  namespace: wego-system
+spec:
+  branch: main
+  config_url: ssh://git@github.com/mtparet/testigops.git
+  deployment_type: kustomize
+  path: ./
+  source_type: git
+  url: ssh://git@github.com/mtparet/testigops.git
