@@ -1,0 +1,168 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: fluent-bit-sqreen
+  namespace: fluent-bit-webhooks
+  labels:
+    argocd.argoproj.io/instance: auto-resources
+spec:
+  interval: 60m
+  releaseName: fluent-bit-sqreen
+  chart:
+    spec:
+      chart: fluent-bit
+      version: 0.19.6
+      sourceRef:
+        kind: HelmRepository
+        name: fluent
+        namespace: charts
+  values:
+    kind: Deployment
+    replicaCount: 1
+    image:
+      repository: fluent/fluent-bit
+      pullPolicy: Always
+    testFramework:
+      image:
+        repository: busybox
+        pullPolicy: Always
+        tag: latest
+    imagePullSecrets: []
+    nameOverride: ''
+    fullnameOverride: ''
+    serviceAccount:
+      create: true
+      annotations: {}
+      name:
+    rbac:
+      create: true
+    podSecurityPolicy:
+      create: false
+      annotations: {}
+    podSecurityContext:
+      fsGroup: 2000
+    dnsConfig: {}
+    hostAliases: []
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+    service:
+      type: ClusterIP
+      port: 2020
+      labels: {}
+      annotations: {}
+    serviceMonitor:
+      enabled: false
+    prometheusRule:
+      enabled: false
+    dashboards:
+      enabled: false
+      labelKey: grafana_dashboard
+      annotations: {}
+    livenessProbe: {}
+    readinessProbe:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    podAnnotations: {}
+    podLabels: {}
+    priorityClassName: ''
+    env: []
+    envFrom: []
+    extraContainers: []
+    extraPorts:
+    - port: 8080
+      containerPort: 8080
+      protocol: TCP
+      name: tcp
+    extraVolumes: []
+    extraVolumeMounts: []
+    updateStrategy: {}
+    existingConfigMap: ''
+    networkPolicy:
+      enabled: false
+    luaScripts: {}
+    config:
+      service: |
+        [SERVICE]
+            Flush 1
+            Daemon Off
+            Log_Level info
+            Parsers_File parsers.conf
+            Parsers_File parsers_custom.conf
+            HTTP_Server On
+            HTTP_Listen 0.0.0.0
+            HTTP_Port {{ .Values.service.port }}
+      inputs: |
+        [INPUT]
+            Name http
+            Host 0.0.0.0
+            Port 8080
+      filters: ''
+      outputs: |
+        [OUTPUT]
+            Name  es
+            Match *
+            Host  elasticsearch-ingest.audit-logs
+            Port  9200
+            Logstash_Format On
+            Retry_Limit 5
+            Type  _doc
+            Trace_Error true
+            Buffer_Size 32KB
+            Time_Key @timestamp
+            Replace_Dots On
+            Logstash_Prefix logs-audit-sqreen
+            Logstash_Prefix_Key es_index
+            tls on
+            tls.verify off
+            tls.debug 1
+      customParsers: |
+        [PARSER]
+            Name docker_no_time
+            Format json
+            Time_Keep Off
+            Time_Key time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L
+    volumeMounts:
+    - name: config
+      mountPath: "/fluent-bit/etc/fluent-bit.conf"
+      subPath: fluent-bit.conf
+    - name: config
+      mountPath: "/fluent-bit/etc/custom_parsers.conf"
+      subPath: custom_parsers.conf
+    daemonSetVolumes:
+    - name: varlog
+      hostPath:
+        path: "/var/log"
+    - name: varlibdockercontainers
+      hostPath:
+        path: "/var/lib/docker/containers"
+    - name: etcmachineid
+      hostPath:
+        path: "/etc/machine-id"
+        type: File
+    daemonSetVolumeMounts:
+    - name: varlog
+      mountPath: "/var/log"
+    - name: varlibdockercontainers
+      mountPath: "/var/lib/docker/containers"
+      readOnly: true
+    - name: etcmachineid
+      mountPath: "/etc/machine-id"
+      readOnly: true
+    args: []
+    command: []
+    initContainers: []
