@@ -4,4 +4,4 @@ metadata:
   name: minikube
   namespace: wego-system
 resources:
-- ../../../apps/Releases
+- ../../../apps/releases
