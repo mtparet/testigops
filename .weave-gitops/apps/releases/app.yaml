@@ -4,7 +4,7 @@ kind: Application
 metadata:
   labels:
     wego.weave.works/app-identifier: wego-d1bf0078a9a4a6c082d50f69b3e881ab
-  name: Releases
+  name: releases
   namespace: wego-system
 spec:
   branch: main

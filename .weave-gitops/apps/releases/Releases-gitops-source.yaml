@@ -2,7 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: GitRepository
 metadata:
   creationTimestamp: null
-  name: Releases
+  name: releases
   namespace: wego-system
 spec:
   ignore: |-
