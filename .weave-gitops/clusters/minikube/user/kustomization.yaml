@@ -5,4 +5,3 @@ metadata:
   namespace: wego-system
 resources:
 - ../../../apps/Releases
-- ../../../apps/Releases
